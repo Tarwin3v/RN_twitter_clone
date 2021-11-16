@@ -1,10 +1,10 @@
 {
   "version": "1",
   "cognitoConfig": {
-    "identityPoolName": "twitterclone5564512a_identitypool_5564512a",
+    "identityPoolName": "twitterclone449236e3_identitypool_449236e3",
     "allowUnauthenticatedIdentities": false,
-    "resourceNameTruncated": "twitte5564512a",
-    "userPoolName": "twitterclone5564512a_userpool_5564512a",
+    "resourceNameTruncated": "twitte449236e3",
+    "userPoolName": "twitterclone449236e3_userpool_449236e3",
     "autoVerifiedAttributes": [
       "email"
     ],
@@ -31,10 +31,10 @@
     "userpoolClientReadAttributes": [
       "email"
     ],
-    "userpoolClientLambdaRole": "twitte5564512a_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "twitte449236e3_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "5564512a",
-    "resourceName": "twitterclone5564512a",
+    "sharedId": "449236e3",
+    "resourceName": "twitterclone449236e3",
     "authSelections": "identityPoolAndUserPool",
     "useDefault": "default",
     "userPoolGroupList": [],
