@@ -30,6 +30,9 @@ import {
 import LinkingConfiguration from "./LinkingConfiguration";
 import ProfilePicture from "../components/ProfilePicture";
 import TweetScreen from "../screens/TweetScreen";
+import { useState } from "react";
+import { API, graphqlOperation, Auth } from "aws-amplify";
+import { getUser } from "../graphql/queries";
 
 export default function Navigation({
   colorScheme,
@@ -85,6 +88,26 @@ const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
+  const [user, setUser] = useState(null);
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      const userInfo = await Auth.currentAuthenticatedUser({
+        bypassCache: true,
+      });
+      if (!userInfo) return;
+      try {
+        const userData = API.graphql(
+          graphqlOperation(getUser, { id: userInfo.attributes.sub })
+        );
+        if (userData) {
+          setUser(userData.data.getUser);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+  }, []);
 
   return (
     <BottomTab.Navigator
@@ -124,7 +147,9 @@ function BottomTabNavigator() {
           headerLeft: () => (
             <ProfilePicture
               image={
-                "https://cdn.pixabay.com/photo/2020/12/12/17/24/little-egret-5826070_960_720.jpg"
+                user
+                  ? user.image
+                  : "https://cdn.pixabay.com/photo/2020/12/12/17/24/little-egret-5826070_960_720.jpg"
               }
               size={40}
             />
