@@ -7,23 +7,44 @@ import {
   TextInput,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import Colors from "../constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+
+import Colors from "../constants/Colors";
 import ProfilePicture from "../components/ProfilePicture";
+
+import { API, graphqlOperation, Auth } from "aws-amplify";
+import { createTweet } from "../graphql/mutations";
 
 const TweetScreen = () => {
   const [post, setPost] = useState("");
   const [image, setImage] = useState("");
+  const navigation = useNavigation();
 
-  const onPost = () => {
-    console.warn(post);
-    console.warn(image);
+  const onPost = async () => {
+    try {
+      const currentUser = await Auth.currentAuthenticatedUser({
+        bypassCache: true,
+      });
+
+      const tweet = {
+        content: post,
+        image: image,
+        userID: currentUser.attributes.sub,
+      };
+      await API.graphql(graphqlOperation(createTweet, { input: tweet }));
+      navigation.goBack();
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
-        <AntDesign name="close" size={30} color={Colors.light.tint} />
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <AntDesign name="close" size={30} color={Colors.light.tint} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={onPost}>
           <Text style={styles.buttonText} onPress={onPost}>
             Tweet
