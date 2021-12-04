@@ -1,0 +1,13 @@
+{
+  "resourceName": "twitterClone",
+  "policyUUID": "7a8f7295",
+  "bucketName": "tarwintwitterclones3",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

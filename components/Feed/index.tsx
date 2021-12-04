@@ -14,6 +14,7 @@ export const Feed = () => {
     try {
       const tweetsData = await API.graphql(graphqlOperation(listTweets));
       setTweets(tweetsData.data.listTweets.items);
+      console.log(tweetsData.data.listTweets.items);
     } catch (error) {
       console.log(error);
     } finally {
