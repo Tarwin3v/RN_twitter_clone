@@ -1,19 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   View,
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Platform,
+  Image,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import { API, graphqlOperation, Auth, Storage } from "aws-amplify";
+import * as ImagePicker from "expo-image-picker";
+import "react-native-get-random-values";
+import { v4 as uuid } from "uuid";
 
 import Colors from "../constants/Colors";
 import ProfilePicture from "../components/ProfilePicture";
-
-import { API, graphqlOperation, Auth } from "aws-amplify";
 import { createTweet } from "../graphql/mutations";
 
 const TweetScreen = () => {
@@ -21,15 +25,63 @@ const TweetScreen = () => {
   const [image, setImage] = useState("");
   const navigation = useNavigation();
 
+  useEffect(() => {
+    getPermission();
+  }, []);
+
+  const getPermission = async () => {
+    if (Platform.OS !== "web") {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        alert("Sorry, we need roll permissions to make this work!");
+      }
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+      if (!result.cancelled) setImage(result.uri);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const uploadImage = async () => {
+    let result;
+    try {
+      const res = await fetch(image);
+      const blob = await res.blob();
+      const imageNameArray = image.split(".");
+      const extension = imageNameArray[imageNameArray.length - 1];
+      const imageKey = `${uuid()}.${extension}`;
+      result = await Storage.put(imageKey, blob);
+    } catch (error) {
+      console.log(error);
+    }
+    return result;
+  };
+
   const onPost = async () => {
     try {
       const currentUser = await Auth.currentAuthenticatedUser({
         bypassCache: true,
       });
 
+      let imageID;
+      if (image) {
+        imageID = await uploadImage();
+      }
+
       const tweet = {
         content: post,
-        image: image,
+        image: imageID ? imageID.key : "",
         userID: currentUser.attributes.sub,
       };
       await API.graphql(graphqlOperation(createTweet, { input: tweet }));
@@ -67,12 +119,12 @@ const TweetScreen = () => {
             multiline
             numberOfLines={5}
           />
-          <TextInput
-            value={image}
-            onChangeText={(e) => setImage(e)}
-            placeholder="Image url"
-            style={styles.imageInput}
-          />
+          <TouchableOpacity onPress={pickImage}>
+            <Text style={styles.imageInput}>Pick an image</Text>
+          </TouchableOpacity>
+          {!!image && (
+            <Image source={{ uri: image }} style={styles.imagePreview} />
+          )}
         </View>
       </View>
     </SafeAreaView>
@@ -115,7 +167,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlignVertical: "top",
   },
-  imageInput: {},
+  imageInput: {
+    fontSize: 18,
+    color: Colors.light.tint,
+    marginVertical: 10,
+  },
+  imagePreview: {
+    width: 150,
+    height: 150,
+  },
 });
 
 export default TweetScreen;
