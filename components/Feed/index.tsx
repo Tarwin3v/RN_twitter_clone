@@ -4,10 +4,21 @@ import { View } from "react-native";
 import Tweet from "../Tweet";
 import { API, graphqlOperation, Auth } from "aws-amplify";
 import { listTweets } from "../../graphql/queries";
+import { onCreateTweet } from "../../graphql/subscriptions";
 
 export const Feed = () => {
   const [tweets, setTweets] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  let subscription;
+
+  const subscriptions = () => {
+    subscription = API.graphql(graphqlOperation(onCreateTweet)).subscribe({
+      next: () => {
+        getTweets();
+      },
+    });
+  };
 
   const getTweets = async () => {
     setLoading(true);
@@ -25,6 +36,13 @@ export const Feed = () => {
   useEffect(() => {
     getTweets();
   }, []);
+
+  useEffect(() => {
+    subscriptions();
+    return () => {
+      subscription.unsubscribe();
+    };
+  });
 
   const propComparator = (propName) => (a, b) =>
     a[propName] == b[propName] ? 0 : a[propName] > b[propName] ? -1 : 1;
