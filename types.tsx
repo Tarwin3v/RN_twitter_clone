@@ -52,7 +52,7 @@ export type TweetType = {
   createdAt: string;
   content: string;
   image?: string;
-  commentsCount?: number;
-  retweetsCount?: number;
-  likesCount?: number;
+  comments: [];
+  retweets: [];
+  likes: Object;
 };
